@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PokerLite by Warrior's Garage</title>
-    <!-- === ENLACE AL MANIFEST (PWA) === -->
     <link rel="manifest" href="manifest.json">
     <style>
-        /* ===== Mismos estilos de la versión anterior ===== */
+        /* ===== Estilos actuales (sin cambios) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -34,6 +33,113 @@
             border: 1px solid #353d4d;
             position: relative;
         }
+        /* ===== Banner de instalación ===== */
+        .install-banner {
+            position: relative;
+            background: linear-gradient(135deg, #1e2636, #2a3345);
+            border-radius: 20px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(247,216,117,0.3);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,215,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .install-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 70% 30%, rgba(247,216,117,0.05), transparent 50%);
+            pointer-events: none;
+        }
+        .install-banner .icon {
+            font-size: 32px;
+            line-height: 1;
+            flex-shrink: 0;
+            animation: pulse-icon 2s infinite;
+        }
+        @keyframes pulse-icon {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .install-banner .content {
+            flex: 1;
+        }
+        .install-banner .content .title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f7d875;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .install-banner .content .title .badge {
+            font-size: 9px;
+            background: #f7d875;
+            color: #1a1f28;
+            padding: 1px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .install-banner .content .desc {
+            font-size: 12px;
+            color: #b0b8c8;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+        .install-banner .content .desc span {
+            color: #6fcf97;
+            font-weight: 600;
+        }
+        .install-banner .btn-install {
+            background: linear-gradient(135deg, #f7d875, #d4a342);
+            border: none;
+            border-radius: 40px;
+            padding: 10px 18px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #1a1f28;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(247,216,117,0.3);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-family: inherit;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .install-banner .btn-install:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(247,216,117,0.2);
+        }
+        .install-banner .btn-close {
+            background: none;
+            border: none;
+            color: #7a8290;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            flex-shrink: 0;
+            transition: color 0.2s;
+        }
+        .install-banner .btn-close:active {
+            color: #e0e4ec;
+        }
+        /* Ocultar banner cuando está instalado o cerrado */
+        .install-banner.hidden {
+            display: none;
+        }
+
+        /* ===== Estilos del resto (sin cambios) ===== */
         .header {
             display: flex;
             justify-content: space-between;
@@ -197,6 +303,8 @@
             .logo { font-size: 16px; }
             .logo .sub { font-size: 10px; }
             .table-info .blinds { font-size: 9px; }
+            .install-banner { flex-wrap: wrap; }
+            .install-banner .btn-install { width: 100%; text-align: center; }
         }
         @media (max-width: 360px) {
             .seat { min-width: 30px; }
@@ -210,6 +318,23 @@
 </head>
 <body>
 <div id="app">
+    <!-- ===== BANNER DE INSTALACIÓN (premium) ===== -->
+    <div class="install-banner" id="installBanner">
+        <div class="icon">📲</div>
+        <div class="content">
+            <div class="title">
+                PokerLite
+                <span class="badge">PRO</span>
+            </div>
+            <div class="desc">
+                <span>Juega sin conexión</span> · acceso rápido · experiencia premium
+            </div>
+        </div>
+        <button class="btn-install" id="installBtn">Instalar App</button>
+        <button class="btn-close" id="closeBannerBtn">✕</button>
+    </div>
+
+    <!-- ===== RESTO DE LA APP (sin cambios) ===== -->
     <div class="header">
         <div class="logo">
             <span>♠</span>
@@ -310,6 +435,89 @@
 </div>
 
 <script>
+    // ================================================================
+    // BANNER DE INSTALACIÓN (Premium)
+    // ================================================================
+    (function() {
+        const banner = document.getElementById('installBanner');
+        const closeBtn = document.getElementById('closeBannerBtn');
+        const installBtn = document.getElementById('installBtn');
+
+        let deferredPrompt = null;
+
+        // Detectar si la app ya está instalada (modo standalone)
+        const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+        if (isInstalled) {
+            banner.classList.add('hidden');
+        }
+
+        // Detectar el evento beforeinstallprompt (Android)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Mostrar banner si no está oculto
+            if (!isInstalled && !banner.classList.contains('hidden')) {
+                banner.classList.remove('hidden');
+            }
+        });
+
+        // Botón de instalación
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Android: mostrar prompt nativo
+                deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
+                if (result.outcome === 'accepted') {
+                    banner.classList.add('hidden');
+                    console.log('App instalada');
+                }
+                deferredPrompt = null;
+            } else if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
+                // iOS: guía para añadir a la pantalla de inicio
+                alert('📱 Para instalar en iOS: toca el botón "Compartir" y selecciona "Añadir a pantalla de inicio".');
+            } else {
+                // Otros navegadores: mostrar mensaje genérico
+                alert('💡 Para instalar esta app, usa Chrome o Edge y busca el icono "Instalar" en la barra de direcciones.');
+            }
+        });
+
+        // Cerrar banner manualmente
+        closeBtn.addEventListener('click', () => {
+            banner.classList.add('hidden');
+            // Guardar preferencia en localStorage para no mostrarlo de nuevo en esta sesión
+            localStorage.setItem('pokerlite-banner-closed', 'true');
+        });
+
+        // Si el usuario cerró el banner antes, no mostrarlo
+        if (localStorage.getItem('pokerlite-banner-closed') === 'true') {
+            banner.classList.add('hidden');
+        }
+
+        // Si la app se instala, ocultar el banner
+        window.addEventListener('appinstalled', () => {
+            banner.classList.add('hidden');
+            localStorage.removeItem('pokerlite-banner-closed');
+        });
+
+        // Si el usuario cambia a modo standalone, ocultar banner
+        window.matchMedia('(display-mode: standalone)').addEventListener('change', (ev) => {
+            if (ev.matches) {
+                banner.classList.add('hidden');
+            }
+        });
+
+        // Mostrar banner si no está instalado y no se ha cerrado
+        if (!isInstalled && localStorage.getItem('pokerlite-banner-closed') !== 'true') {
+            // Pequeño delay para que la interfaz cargue
+            setTimeout(() => {
+                banner.classList.remove('hidden');
+            }, 500);
+        }
+    })();
+
+    // ================================================================
+    // RESTO DEL CÓDIGO DE LA APP (sin cambios)
+    // ================================================================
     (function() {
         'use strict';
 
@@ -330,15 +538,15 @@
         let community = [];
         let deck = [];
         let pot = 0;
-        let currentBet = 0;          // apuesta más alta en la ronda actual
+        let currentBet = 0;
         let handActive = false;
-        let round = 0;               // 0=preflop, 1=flop, 2=turn, 3=river, 4=showdown
+        let round = 0;
         let currentPlayerTurn = 0;
         let actionInProgress = false;
         let gameOver = false;
         let isBroke = false;
         let turnTimeout = null;
-        let dealerPosition = 0;      // índice del dealer (rota cada mano)
+        let dealerPosition = 0;
 
         // ============================================================
         // DOM
@@ -605,7 +813,6 @@
                 brokeOverlay.style.display = 'none';
                 dealerPosition = 0;
             } else {
-                // Mantener saldos, solo resetear cartas
                 for (let p of players) {
                     p.cards = [];
                     p.folded = false;
@@ -621,15 +828,12 @@
                     renderAll();
                     return;
                 }
-                // Rotar dealer
                 dealerPosition = (dealerPosition + 1) % NUM_PLAYERS;
             }
 
-            // Mostrar ciegas
             sbEl.textContent = SMALL_BLIND;
             bbEl.textContent = BIG_BLIND;
 
-            // Inicializar mano
             pot = 0;
             currentBet = 0;
             round = 0;
@@ -639,7 +843,6 @@
             community = [];
             deck = createDeck();
 
-            // Repartir cartas
             for (let i = 0; i < 2; i++) {
                 for (let p of players) {
                     p.cards.push(deck.pop());
@@ -647,44 +850,33 @@
             }
             community = deck.splice(0, 5);
 
-            // Resetear apuestas y folds
             for (let p of players) {
                 p.betThisRound = 0;
                 p.folded = false;
             }
 
-            // --- PAGAR CIEGAS ---
-            // Small blind: jugador a la izquierda del dealer
             const sbIndex = (dealerPosition + 1) % NUM_PLAYERS;
             const bbIndex = (dealerPosition + 2) % NUM_PLAYERS;
 
             const sbPlayer = players[sbIndex];
             const bbPlayer = players[bbIndex];
 
-            // Small blind
             const sbAmount = Math.min(SMALL_BLIND, sbPlayer.chips);
             sbPlayer.chips -= sbAmount;
             sbPlayer.betThisRound += sbAmount;
             pot += sbAmount;
             addHistory(`🃏 ${sbPlayer.name} paga SB $${sbAmount}`);
 
-            // Big blind
             const bbAmount = Math.min(BIG_BLIND, bbPlayer.chips);
             bbPlayer.chips -= bbAmount;
             bbPlayer.betThisRound += bbAmount;
             pot += bbAmount;
             addHistory(`🃏 ${bbPlayer.name} paga BB $${bbAmount}`);
 
-            // La apuesta actual es la big blind
             currentBet = Math.min(BIG_BLIND, bbPlayer.chips);
 
-            // El primer jugador en actuar es el siguiente al big blind (UTG)
             let firstToAct = (bbIndex + 1) % NUM_PLAYERS;
-            // Si el siguiente es el dealer, se salta (en realidad en el póker, el UTG es el que está después del BB)
-            // Pero si solo hay 2 jugadores, el dealer es el SB, etc. Para simplificar, usamos la lógica estándar.
-            // Aseguramos que el primer jugador activo (no folded) sea el que debe actuar.
             currentPlayerTurn = firstToAct;
-            // Si el jugador en firstToAct está folded o inactivo, buscar el siguiente activo
             let attempts = 0;
             while ((players[currentPlayerTurn].folded || !players[currentPlayerTurn].active || players[currentPlayerTurn].chips <= 0) && attempts < NUM_PLAYERS) {
                 currentPlayerTurn = (currentPlayerTurn + 1) % NUM_PLAYERS;
@@ -694,12 +886,10 @@
             renderAll();
             updateInfo();
             handMessage.textContent = 'Pre-flop · Tu turno';
-            // Si el humano es el que debe actuar, habilitar, sino esperar IA
             if (currentPlayerTurn === HUMAN_INDEX) {
                 enableControls(true);
             } else {
                 enableControls(false);
-                // Ejecutar IA después de un breve retraso
                 setTimeout(() => {
                     if (handActive && !gameOver && !isBroke) {
                         executeAITurn(currentPlayerTurn);
@@ -994,7 +1184,6 @@
                 return;
             }
 
-            // Buscar siguiente jugador activo
             let next = (currentPlayerTurn + 1) % NUM_PLAYERS;
             let count = 0;
             let found = false;
@@ -1014,7 +1203,6 @@
                 return;
             }
 
-            // Si es el humano, habilitar controles
             if (currentPlayerTurn === HUMAN_INDEX) {
                 actionInProgress = false;
                 renderAll();
@@ -1028,7 +1216,6 @@
                 return;
             }
 
-            // Turno de IA
             const activePlayers = players.filter(p => !p.folded && p.active && p.chips > 0);
             const allHaveActed = activePlayers.every(p => p.betThisRound === currentBet);
             const allChecked = activePlayers.every(p => p.betThisRound === 0 && currentBet === 0);
@@ -1145,14 +1332,12 @@
                 showdown();
                 return;
             }
-            // Resetear apuestas para la nueva ronda
             for (let p of players) {
                 p.betThisRound = 0;
             }
             currentBet = 0;
             renderAll();
-            // El primer jugador activo después del dealer (para simplificar, el que está después del BB)
-            let firstActive = (dealerPosition + 3) % NUM_PLAYERS; // UTG
+            let firstActive = (dealerPosition + 3) % NUM_PLAYERS;
             let attempts = 0;
             while ((players[firstActive].folded || !players[firstActive].active || players[firstActive].chips <= 0) && attempts < NUM_PLAYERS) {
                 firstActive = (firstActive + 1) % NUM_PLAYERS;
