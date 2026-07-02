@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PokerLite by Warrior's Garage</title>
+    <style>
+        /* ===== Mismos estilos de la versión anterior ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #0a0c10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 5px;
+            margin: 0;
+        }
+        #app {
+            max-width: 460px;
+            width: 100%;
+            background: #1a1f28;
+            border-radius: 24px;
+            padding: 10px 10px 14px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            border: 1px solid #353d4d;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px 6px;
+        }
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e8ecf4;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .logo span:first-child { color: #f7d875; font-size: 22px; }
+        .logo .brand { color: #e8ecf4; }
+        .logo .sub {
+            font-size: 11px;
+            font-weight: 400;
+            color: #b0b8c8;
+            letter-spacing: 0.5px;
+            margin-left: 2px;
+        }
+        .header-actions { color: #7a8290; font-size: 16px; display: flex; gap: 12px; }
+        .table-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #121720;
+            border-radius: 30px;
+            padding: 4px 14px;
+            margin-bottom: 6px;
+            border: 1px solid #2f3648;
+            color: #b0b8c8;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .table-info .game-type { color: #f7d875; }
+        .table-info .pot {
+            color: #fff;
+            background: #2a3140;
+            padding: 0 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        .table-info .pot span { color: #f7d875; }
+        .table-info .blinds {
+            font-size: 10px;
+            color: #b0b8c8;
+            background: #1e2636;
+            padding: 0 8px;
+            border-radius: 12px;
+        }
+        .table-info .blinds span { color: #f7d875; font-weight: 700; }
+        .table {
+            background: radial-gradient(ellipse at center, #2c7a4a, #1a4d2e);
+            border-radius: 60px 60px 40px 40px;
+            padding: 6px 4px 4px;
+            border: 5px solid #3d2e1a;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 8px 0 #1e2a1c;
+            position: relative;
+            min-height: 270px;
+        }
+        .seat-row { display: flex; justify-content: space-between; padding: 0 2px; margin-bottom: 2px; }
+        .seat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 9px;
+            font-weight: 600;
+            color: #e0e4ec;
+            min-width: 44px;
+            padding: 2px 0;
+            transition: all 0.2s;
+            border-radius: 8px;
+        }
+        .seat.active-turn { background: rgba(247,216,117,0.15); border: 2px solid #f7d875; padding: 0 4px; }
+        .seat .avatar { width: 22px; height: 22px; border-radius: 50%; background: #2a3140; border: 2px solid #f7d875; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+        .seat .name { font-size: 9px; color: #fff; white-space: nowrap; max-width: 46px; overflow: hidden; text-overflow: ellipsis; }
+        .seat .chips { color: #f7d875; font-size: 8px; }
+        .seat .status { color: #b0b8c8; font-size: 7px; background: rgba(0,0,0,0.4); padding: 0 4px; border-radius: 6px; }
+        .seat .cards-mini { display: flex; gap: 2px; margin-top: 1px; }
+        .card-mini { width: 16px; height: 22px; background: #1a2535; border-radius: 2px; border: 1px solid #3d5068; font-size: 8px; font-weight: 900; display: flex; align-items: center; justify-content: center; color: #d0d8e8; transition: all 0.2s; }
+        .card-mini.revealed { background: #f5f7fc; color: #1a1a1a; border-color: #b0b8c8; }
+        .card-mini.revealed.red { color: #c33; }
+        .card-mini.revealed.black { color: #111; }
+        .card-mini.back { background: repeating-linear-gradient(45deg, #1e3a5f, #1e3a5f 3px, #2b4b78 3px, #2b4b78 6px); }
+        .seat .bet-display { font-size: 8px; color: #f7d875; background: rgba(0,0,0,0.3); padding: 0 4px; border-radius: 4px; margin-top: 1px; min-height: 12px; }
+        .community { display: flex; justify-content: center; gap: 4px; margin: 4px 0; min-height: 54px; }
+        .community .card { width: 40px; height: 56px; background: #1a2535; border-radius: 4px; border: 2px solid #3d5068; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #d0d8e8; box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.4); transition: all 0.2s; }
+        .community .card.revealed { background: #f5f7fc; color: #1a1a1a; border-color: #b0b8c8; }
+        .community .card.revealed.red { color: #c33; }
+        .community .card.revealed.black { color: #111; }
+        .community .card.back { background: repeating-linear-gradient(45deg, #1e3a5f, #1e3a5f 4px, #2b4b78 4px, #2b4b78 8px); }
+        .community .card.flip { animation: flipIn 0.3s ease-out; }
+        @keyframes flipIn { 0% { transform: rotateY(90deg) scale(0.7); opacity: 0.1; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
+        .hand-message { text-align: center; margin-top: 4px; font-size: 11px; font-weight: 600; color: #e8ecf4; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 30px; min-height: 20px; letter-spacing: 0.2px; }
+        .controls { display: flex; gap: 6px; margin: 8px 0 4px; align-items: stretch; }
+        .controls .btn-group { display: flex; gap: 5px; flex: 1; }
+        .controls .raise-group { display: flex; gap: 5px; flex: 2; align-items: center; background: #121720; border-radius: 40px; padding: 0 8px 0 12px; border: 1px solid #2f3648; }
+        .controls button { padding: 9px 6px; border: none; border-radius: 40px; font-family: inherit; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; background: #3f4552; color: #e0e4ec; box-shadow: 0 3px 0 #1e2129; transition: all 0.08s; cursor: pointer; flex: 1; min-width: 40px; touch-action: manipulation; }
+        .controls button:active { transform: translateY(3px); box-shadow: 0 0px 0 #1e2129; }
+        .controls .fold { background: #8a3a3a; color: #ffe0e0; box-shadow: 0 3px 0 #4a1a1a; }
+        .controls .check { background: #3a6a8a; color: #e0f0ff; box-shadow: 0 3px 0 #1a3345; }
+        .controls .call { background: #3a6a8a; color: #e0f0ff; box-shadow: 0 3px 0 #1a3345; }
+        .controls .raise { background: #4a7a3a; color: #f0ffe0; box-shadow: 0 3px 0 #1e3316; flex: 1; }
+        .controls button:disabled { opacity: 0.3; transform: translateY(2px); box-shadow: 0 1px 0 #1e2129; pointer-events: none; filter: grayscale(0.5); }
+        .raise-group input[type="range"] { flex: 1; height: 3px; -webkit-appearance: none; background: #3f4552; border-radius: 10px; outline: none; margin: 0 4px; }
+        .raise-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: radial-gradient(circle, #f7d875, #c99f3a); border-radius: 50%; border: 2px solid #1a1a1a; box-shadow: 0 0 10px rgba(247,216,117,0.3); cursor: pointer; }
+        .raise-group .bet-value { font-weight: 700; color: #f7d875; min-width: 32px; text-align: center; font-size: 13px; }
+        .history { background: #121720; border-radius: 16px; padding: 4px 10px; max-height: 38px; overflow-y: auto; border: 1px solid #2f3648; font-size: 10px; color: #b0b8c8; margin-top: 4px; }
+        .history p { padding: 1px 0; border-bottom: 1px solid #222837; margin: 0; line-height: 1.3; }
+        .history p:last-child { border-bottom: none; }
+        .history .highlight { color: #f7d875; font-weight: 600; }
+        .history .win { color: #6fcf97; font-weight: 600; }
+        .history .loss { color: #eb5757; font-weight: 600; }
+        .history::-webkit-scrollbar { width: 2px; }
+        .history::-webkit-scrollbar-track { background: #121720; }
+        .history::-webkit-scrollbar-thumb { background: #3f4552; border-radius: 10px; }
+        .reset-btn { background: #3f4552; border: none; color: #e0e4ec; padding: 6px; border-radius: 30px; font-family: inherit; font-weight: 600; font-size: 11px; margin-top: 6px; width: 100%; box-shadow: 0 3px 0 #1e2129; transition: 0.07s; cursor: pointer; border: 1px solid #4a505e; }
+        .reset-btn:active { transform: translateY(3px); box-shadow: 0 0px 0 #1e2129; }
+        .footer { text-align: center; font-size: 10px; color: #6a7280; margin-top: 6px; border-top: 1px solid #222837; padding-top: 6px; letter-spacing: 0.3px; }
+        .footer .brand { color: #f7d875; font-weight: 600; }
+        .waiting .controls button { opacity: 0.3; pointer-events: none; transform: translateY(2px); }
+        .waiting .hand-message { animation: pulseText 1s infinite; }
+        @keyframes pulseText { 50% { opacity: 0.5; } }
+        .win-glow { animation: winPulse 0.7s; }
+        .lose-glow { animation: losePulse 0.7s; }
+        @keyframes winPulse { 50% { box-shadow: inset 0 0 50px rgba(111,207,151,0.5); } }
+        @keyframes losePulse { 50% { box-shadow: inset 0 0 50px rgba(235,87,87,0.4); } }
+        .broke-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+        }
+        .broke-overlay h2 { font-size: 28px; color: #eb5757; margin-bottom: 10px; text-shadow: 0 0 30px rgba(235,87,87,0.5); }
+        .broke-overlay p { font-size: 16px; color: #b0b8c8; margin-bottom: 20px; }
+        .broke-overlay .reset-btn { max-width: 200px; margin: 0 auto; }
+        @media (max-width: 420px) {
+            .seat { min-width: 36px; }
+            .seat .name { font-size: 8px; max-width: 34px; }
+            .seat .chips { font-size: 7px; }
+            .community .card { width: 34px; height: 46px; font-size: 12px; }
+            .controls button { font-size: 10px; padding: 7px 4px; min-width: 36px; }
+            .raise-group .bet-value { font-size: 11px; min-width: 28px; }
+            .raise-group { padding: 0 6px; }
+            .broke-overlay h2 { font-size: 22px; }
+            .logo { font-size: 16px; }
+            .logo .sub { font-size: 10px; }
+            .table-info .blinds { font-size: 9px; }
+        }
+        @media (max-width: 360px) {
+            .seat { min-width: 30px; }
+            .community .card { width: 28px; height: 38px; font-size: 10px; }
+            .controls button { font-size: 9px; padding: 6px 3px; min-width: 30px; }
+            .raise-group .bet-value { font-size: 10px; min-width: 24px; }
+            .logo { font-size: 14px; }
+            .logo .sub { font-size: 9px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="header">
+        <div class="logo">
+            <span>♠</span>
+            <span class="brand">PokerLite</span>
+            <span class="sub">by Warrior's Garage</span>
+        </div>
+        <div class="header-actions"><span>⚙</span><span>✕</span></div>
+    </div>
+    <div class="table-info">
+        <span class="game-type">♠ No-Limit Hold'em</span>
+        <span class="blinds">SB: <span id="sbDisplay">5</span> · BB: <span id="bbDisplay">10</span></span>
+        <span class="pot">Bote: <span id="potDisplay">0</span></span>
+    </div>
+    <div class="table" id="tableArea">
+        <div class="seat-row">
+            <div class="seat" data-seat="0">
+                <div class="avatar">👤</div>
+                <div class="name">Jug1</div>
+                <div class="chips">$2,000</div>
+                <div class="status">Activo</div>
+                <div class="cards-mini"><div class="card-mini back"></div><div class="card-mini back"></div></div>
+                <div class="bet-display"></div>
+            </div>
+            <div class="seat" data-seat="1" id="seatIA">
+                <div class="avatar">🤖</div>
+                <div class="name">IA</div>
+                <div class="chips" id="iaChips">$1,000</div>
+                <div class="status" id="iaStatus">Activo</div>
+                <div class="cards-mini"><div class="card-mini back" id="opCard1"></div><div class="card-mini back" id="opCard2"></div></div>
+                <div class="bet-display" id="iaBetDisplay"></div>
+            </div>
+            <div class="seat" data-seat="2">
+                <div class="avatar">👤</div>
+                <div class="name">Jug3</div>
+                <div class="chips">$1,500</div>
+                <div class="status">Activo</div>
+                <div class="cards-mini"><div class="card-mini back"></div><div class="card-mini back"></div></div>
+                <div class="bet-display"></div>
+            </div>
+        </div>
+        <div class="community" id="communityCards">
+            <div class="card back" data-index="0"></div>
+            <div class="card back" data-index="1"></div>
+            <div class="card back" data-index="2"></div>
+            <div class="card back" data-index="3"></div>
+            <div class="card back" data-index="4"></div>
+        </div>
+        <div class="seat-row">
+            <div class="seat" data-seat="3">
+                <div class="avatar">👤</div>
+                <div class="name">Jug4</div>
+                <div class="chips">$1,200</div>
+                <div class="status">Activo</div>
+                <div class="cards-mini"><div class="card-mini back"></div><div class="card-mini back"></div></div>
+                <div class="bet-display"></div>
+            </div>
+            <div class="seat" data-seat="4" id="seatPlayer">
+                <div class="avatar">👤</div>
+                <div class="name">Tú</div>
+                <div class="chips" id="playerChips">$1,000</div>
+                <div class="status" id="playerStatus">Activo</div>
+                <div class="cards-mini"><div class="card-mini back" id="plCard1"></div><div class="card-mini back" id="plCard2"></div></div>
+                <div class="bet-display" id="playerBetDisplay"></div>
+            </div>
+            <div class="seat" data-seat="5">
+                <div class="avatar">👤</div>
+                <div class="name">Jug6</div>
+                <div class="chips">$800</div>
+                <div class="status">Activo</div>
+                <div class="cards-mini"><div class="card-mini back"></div><div class="card-mini back"></div></div>
+                <div class="bet-display"></div>
+            </div>
+        </div>
+        <div class="hand-message" id="handMessage">Esperando inicio...</div>
+        <div class="broke-overlay" id="brokeOverlay" style="display: none;">
+            <h2>💔 BANCARROTA</h2>
+            <p>Te has quedado sin fichas.<br>¡Suerte en la próxima partida!</p>
+            <button class="reset-btn" id="resetBrokeBtn">🔄 NUEVA PARTIDA</button>
+        </div>
+    </div>
+    <div class="controls" id="controls">
+        <div class="btn-group">
+            <button class="fold" id="foldBtn">Fold</button>
+            <button class="check" id="checkBtn">Check</button>
+            <button class="call" id="callBtn">Call</button>
+        </div>
+        <div class="raise-group">
+            <input type="range" id="betRange" min="10" max="500" value="50" step="10">
+            <span class="bet-value" id="betValue">$50</span>
+            <button class="raise" id="raiseBtn">Raise</button>
+        </div>
+    </div>
+    <div class="history" id="historyLog"><p>Bienvenido a PokerLite</p></div>
+    <button class="reset-btn" id="resetBtn">🔄 REINICIAR SALDO</button>
+    <div class="footer">
+        <span class="brand">PokerLite by Warrior's Garage</span> · IA con personalidades · Juego continuo
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        // ============================================================
+        // CONFIGURACIÓN
+        // ============================================================
+        const NUM_PLAYERS = 6;
+        const HUMAN_INDEX = 4;
+        const AI_MAIN_INDEX = 1;
+        const INITIAL_BALANCE = 1000;
+        const SMALL_BLIND = 5;
+        const BIG_BLIND = 10;
+
+        // ============================================================
+        // ESTADO
+        // ============================================================
+        let players = [];
+        let community = [];
+        let deck = [];
+        let pot = 0;
+        let currentBet = 0;          // apuesta más alta en la ronda actual
+        let handActive = false;
+        let round = 0;               // 0=preflop, 1=flop, 2=turn, 3=river, 4=showdown
+        let currentPlayerTurn = 0;
+        let actionInProgress = false;
+        let gameOver = false;
+        let isBroke = false;
+        let turnTimeout = null;
+        let dealerPosition = 0;      // índice del dealer (rota cada mano)
+
+        // ============================================================
+        // DOM
+        // ============================================================
+        const potEl = document.getElementById('potDisplay');
+        const sbEl = document.getElementById('sbDisplay');
+        const bbEl = document.getElementById('bbDisplay');
+        const betRange = document.getElementById('betRange');
+        const betValue = document.getElementById('betValue');
+        const foldBtn = document.getElementById('foldBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const callBtn = document.getElementById('callBtn');
+        const raiseBtn = document.getElementById('raiseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const resetBrokeBtn = document.getElementById('resetBrokeBtn');
+        const historyLog = document.getElementById('historyLog');
+        const handMessage = document.getElementById('handMessage');
+        const plCard1 = document.getElementById('plCard1');
+        const plCard2 = document.getElementById('plCard2');
+        const opCard1 = document.getElementById('opCard1');
+        const opCard2 = document.getElementById('opCard2');
+        const communitySlots = document.querySelectorAll('#communityCards .card');
+        const tableArea = document.getElementById('tableArea');
+        const appEl = document.getElementById('app');
+        const playerChipsEl = document.getElementById('playerChips');
+        const iaChipsEl = document.getElementById('iaChips');
+        const iaStatusEl = document.getElementById('iaStatus');
+        const playerStatusEl = document.getElementById('playerStatus');
+        const brokeOverlay = document.getElementById('brokeOverlay');
+
+        // ============================================================
+        // UTILIDADES
+        // ============================================================
+        function createDeck() {
+            const suits = ['♠','♥','♦','♣'];
+            const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+            const d = [];
+            for (let s of suits) {
+                for (let i = 0; i < ranks.length; i++) {
+                    d.push({ rank: ranks[i], suit: s, value: i + 2 });
+                }
+            }
+            return shuffle(d);
+        }
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        function cardDisplay(c) { return c.rank + c.suit; }
+        function isRed(c) { return c.suit === '♥' || c.suit === '♦'; }
+
+        // Sonidos
+        let audioCtx = null;
+        function playTone(freq, duration, type = 'sine', vol = 0.04) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+        function soundRaise() { playTone(600, 0.08, 'square', 0.04); }
+        function soundCall() { playTone(400, 0.06, 'sine', 0.05); }
+        function soundFold() { playTone(200, 0.12, 'sawtooth', 0.03); }
+        function soundWin() {
+            playTone(800, 0.05);
+            setTimeout(() => playTone(1000, 0.05), 70);
+            setTimeout(() => playTone(1200, 0.08), 140);
+        }
+        function soundLose() { playTone(300, 0.15, 'sawtooth', 0.04); }
+
+        // ============================================================
+        // EVALUACIÓN DE MANOS
+        // ============================================================
+        function evaluateHand(cards) {
+            if (cards.length < 5) return { rank: 0, name: 'Alta', high: 0 };
+            const values = cards.map(c => c.value).sort((a, b) => a - b);
+            const suits = cards.map(c => c.suit);
+            const isFlush = suits.every(s => s === suits[0]);
+            let straight = false, straightHigh = 0;
+            const unique = [...new Set(values)];
+            if (unique.length === 5) {
+                if (unique[4] - unique[0] === 4) {
+                    straight = true;
+                    straightHigh = unique[4];
+                } else if (unique[0] === 2 && unique[1] === 3 && unique[2] === 4 && unique[3] === 5 && unique[4] === 14) {
+                    straight = true;
+                    straightHigh = 5;
+                }
+            }
+            const freq = {};
+            values.forEach(v => freq[v] = (freq[v] || 0) + 1);
+            const counts = Object.values(freq);
+            const hasFour = counts.includes(4);
+            const hasThree = counts.includes(3);
+            const pairs = counts.filter(c => c === 2).length;
+
+            let rank = 0, name = 'Carta alta', high = values[4];
+            if (isFlush && straight) {
+                rank = 9; name = 'Escalera de color'; high = straightHigh;
+            } else if (hasFour) {
+                rank = 8; name = 'Póker';
+                for (let v in freq) if (freq[v] === 4) high = parseInt(v);
+            } else if (hasThree && pairs === 1) {
+                rank = 7; name = 'Full';
+                for (let v in freq) if (freq[v] === 3) high = parseInt(v);
+            } else if (isFlush) {
+                rank = 6; name = 'Color'; high = values[4];
+            } else if (straight) {
+                rank = 5; name = 'Escalera'; high = straightHigh;
+            } else if (hasThree) {
+                rank = 4; name = 'Trío';
+                for (let v in freq) if (freq[v] === 3) high = parseInt(v);
+            } else if (pairs === 2) {
+                rank = 3; name = 'Doble pareja';
+                const pv = Object.keys(freq).filter(v => freq[v] === 2).map(Number).sort((a, b) => b - a);
+                high = pv[0];
+            } else if (pairs === 1) {
+                rank = 2; name = 'Pareja';
+                for (let v in freq) if (freq[v] === 2) high = parseInt(v);
+            } else {
+                rank = 1; name = 'Carta alta'; high = values[4];
+            }
+            return { rank, name, high };
+        }
+
+        function getBestHand(playerCards, communityCards) {
+            const all = [...playerCards, ...communityCards];
+            if (all.length < 5) return { rank: 0, name: 'Esperando', high: 0 };
+            let best = { rank: 0, name: '', high: 0 };
+            const indices = [0, 1, 2, 3, 4, 5, 6];
+            for (let i = 0; i < indices.length - 4; i++) {
+                for (let j = i + 1; j < indices.length - 3; j++) {
+                    for (let k = j + 1; k < indices.length - 2; k++) {
+                        for (let l = k + 1; l < indices.length - 1; l++) {
+                            for (let m = l + 1; m < indices.length; m++) {
+                                const combo = [all[i], all[j], all[k], all[l], all[m]];
+                                const ev = evaluateHand(combo);
+                                if (ev.rank > best.rank || (ev.rank === best.rank && ev.high > best.high)) {
+                                    best = ev;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return best;
+        }
+
+        // ============================================================
+        // INTELIGENCIA ARTIFICIAL
+        // ============================================================
+        const PERSONALITIES = [
+            { name: 'Tight-Agresivo', aggro: 0.7, callThreshold: 0.3, bluff: 0.05, foldThreshold: 0.2 },
+            { name: 'Loose-Agresivo', aggro: 0.9, callThreshold: 0.5, bluff: 0.2, foldThreshold: 0.1 },
+            { name: 'Tight-Pasivo', aggro: 0.2, callThreshold: 0.4, bluff: 0.02, foldThreshold: 0.4 },
+            { name: 'Loose-Pasivo', aggro: 0.3, callThreshold: 0.7, bluff: 0.05, foldThreshold: 0.2 },
+            { name: 'Farolero', aggro: 0.6, callThreshold: 0.3, bluff: 0.4, foldThreshold: 0.3 },
+            { name: 'Profesional', aggro: 0.5, callThreshold: 0.35, bluff: 0.15, foldThreshold: 0.25 },
+        ];
+
+        function getPersonality(index) {
+            const map = [0, 5, 1, 2, 4, 3];
+            return PERSONALITIES[map[index] % PERSONALITIES.length];
+        }
+
+        function smartAI(player, community, pot, currentBet, personality, round, playerIndex) {
+            const hand = player.cards;
+            let strength = 0;
+            if (community.length >= 3) {
+                const best = getBestHand(hand, community);
+                strength = best.rank * 100 + best.high;
+            } else {
+                const v1 = hand[0].value, v2 = hand[1].value;
+                const high = Math.max(v1, v2), low = Math.min(v1, v2);
+                const pair = v1 === v2;
+                const suited = hand[0].suit === hand[1].suit;
+                let score = 0;
+                if (pair) score += high * 12;
+                else {
+                    if (high >= 12) score += high * 4;
+                    if (high - low <= 2) score += 25;
+                    if (high - low === 1) score += 15;
+                }
+                if (suited) score += 18;
+                if (high === 14) score += 10;
+                if (high === 13) score += 5;
+                strength = score;
+            }
+
+            const { aggro, callThreshold, bluff, foldThreshold } = personality;
+            const positionBonus = (playerIndex === 1 || playerIndex === 5) ? 5 : 0;
+            const rand = Math.random();
+
+            if (strength > 450 + positionBonus && rand < 0.7 * aggro) {
+                return { action: 'raise', amount: Math.min(currentBet + Math.floor(pot * 0.4 + 30), player.chips) };
+            }
+            if (strength > 300 + positionBonus && rand < 0.5 * aggro) {
+                return { action: 'raise', amount: Math.min(currentBet + Math.floor(pot * 0.3 + 20), player.chips) };
+            }
+            if (strength > 180 && rand < callThreshold) {
+                if (pot > 150 && rand < 0.3 * aggro) {
+                    return { action: 'raise', amount: Math.min(currentBet + Math.floor(pot * 0.2 + 10), player.chips) };
+                }
+                return { action: 'call', amount: currentBet };
+            }
+            if (strength > 100 && rand < callThreshold * 0.8) {
+                return { action: 'call', amount: currentBet };
+            }
+            if (pot > 80 && strength > 30 && rand < bluff) {
+                return { action: 'raise', amount: Math.min(currentBet + Math.floor(pot * 0.15 + 10), player.chips) };
+            }
+            if (rand < foldThreshold) {
+                return { action: 'fold', amount: 0 };
+            }
+            if (currentBet === 0 && strength > 40 && rand < 0.5) {
+                return { action: 'check', amount: 0 };
+            }
+            if (currentBet < 30 && strength > 20 && rand < 0.3) {
+                return { action: 'call', amount: currentBet };
+            }
+            return { action: 'fold', amount: 0 };
+        }
+
+        function mainAI(player, community, pot, currentBet, playerBet, opponentBet, round) {
+            const personality = PERSONALITIES[5];
+            return smartAI(player, community, pot, currentBet, personality, round, player.index);
+        }
+
+        // ============================================================
+        // INICIALIZACIÓN CON CIEGAS
+        // ============================================================
+        function initGame(resetBalance = false) {
+            const names = ['Jug1', 'IA', 'Jug3', 'Jug4', 'Tú', 'Jug6'];
+            const initialChips = [2000, 1000, 1500, 1200, INITIAL_BALANCE, 800];
+
+            if (!players.length || resetBalance) {
+                players = [];
+                for (let i = 0; i < NUM_PLAYERS; i++) {
+                    players.push({
+                        index: i,
+                        name: names[i],
+                        chips: initialChips[i],
+                        cards: [],
+                        folded: false,
+                        betThisRound: 0,
+                        active: true,
+                        isAI: i !== HUMAN_INDEX,
+                        isMainAI: i === AI_MAIN_INDEX,
+                        personality: getPersonality(i),
+                    });
+                }
+                isBroke = false;
+                brokeOverlay.style.display = 'none';
+                dealerPosition = 0;
+            } else {
+                // Mantener saldos, solo resetear cartas
+                for (let p of players) {
+                    p.cards = [];
+                    p.folded = false;
+                    p.betThisRound = 0;
+                    p.active = true;
+                }
+                if (players[HUMAN_INDEX].chips <= 0) {
+                    isBroke = true;
+                    brokeOverlay.style.display = 'flex';
+                    handActive = false;
+                    enableControls(false);
+                    handMessage.textContent = '💔 Bancarrota';
+                    renderAll();
+                    return;
+                }
+                // Rotar dealer
+                dealerPosition = (dealerPosition + 1) % NUM_PLAYERS;
+            }
+
+            // Mostrar ciegas
+            sbEl.textContent = SMALL_BLIND;
+            bbEl.textContent = BIG_BLIND;
+
+            // Inicializar mano
+            pot = 0;
+            currentBet = 0;
+            round = 0;
+            handActive = true;
+            gameOver = false;
+            actionInProgress = false;
+            community = [];
+            deck = createDeck();
+
+            // Repartir cartas
+            for (let i = 0; i < 2; i++) {
+                for (let p of players) {
+                    p.cards.push(deck.pop());
+                }
+            }
+            community = deck.splice(0, 5);
+
+            // Resetear apuestas y folds
+            for (let p of players) {
+                p.betThisRound = 0;
+                p.folded = false;
+            }
+
+            // --- PAGAR CIEGAS ---
+            // Small blind: jugador a la izquierda del dealer
+            const sbIndex = (dealerPosition + 1) % NUM_PLAYERS;
+            const bbIndex = (dealerPosition + 2) % NUM_PLAYERS;
+
+            const sbPlayer = players[sbIndex];
+            const bbPlayer = players[bbIndex];
+
+            // Small blind
+            const sbAmount = Math.min(SMALL_BLIND, sbPlayer.chips);
+            sbPlayer.chips -= sbAmount;
+            sbPlayer.betThisRound += sbAmount;
+            pot += sbAmount;
+            addHistory(`🃏 ${sbPlayer.name} paga SB $${sbAmount}`);
+
+            // Big blind
+            const bbAmount = Math.min(BIG_BLIND, bbPlayer.chips);
+            bbPlayer.chips -= bbAmount;
+            bbPlayer.betThisRound += bbAmount;
+            pot += bbAmount;
+            addHistory(`🃏 ${bbPlayer.name} paga BB $${bbAmount}`);
+
+            // La apuesta actual es la big blind
+            currentBet = Math.min(BIG_BLIND, bbPlayer.chips);
+
+            // El primer jugador en actuar es el siguiente al big blind (UTG)
+            let firstToAct = (bbIndex + 1) % NUM_PLAYERS;
+            // Si el siguiente es el dealer, se salta (en realidad en el póker, el UTG es el que está después del BB)
+            // Pero si solo hay 2 jugadores, el dealer es el SB, etc. Para simplificar, usamos la lógica estándar.
+            // Aseguramos que el primer jugador activo (no folded) sea el que debe actuar.
+            currentPlayerTurn = firstToAct;
+            // Si el jugador en firstToAct está folded o inactivo, buscar el siguiente activo
+            let attempts = 0;
+            while ((players[currentPlayerTurn].folded || !players[currentPlayerTurn].active || players[currentPlayerTurn].chips <= 0) && attempts < NUM_PLAYERS) {
+                currentPlayerTurn = (currentPlayerTurn + 1) % NUM_PLAYERS;
+                attempts++;
+            }
+
+            renderAll();
+            updateInfo();
+            handMessage.textContent = 'Pre-flop · Tu turno';
+            // Si el humano es el que debe actuar, habilitar, sino esperar IA
+            if (currentPlayerTurn === HUMAN_INDEX) {
+                enableControls(true);
+            } else {
+                enableControls(false);
+                // Ejecutar IA después de un breve retraso
+                setTimeout(() => {
+                    if (handActive && !gameOver && !isBroke) {
+                        executeAITurn(currentPlayerTurn);
+                    }
+                }, 600);
+            }
+            updateSeatStatus();
+            updateBetRange();
+            brokeOverlay.style.display = 'none';
+            if (turnTimeout) clearTimeout(turnTimeout);
+            highlightActiveSeat();
+        }
+
+        // ============================================================
+        // RENDERIZADO
+        // ============================================================
+        function renderAll() {
+            renderCards();
+            renderSeats();
+            updateBalanceUI();
+            updatePot();
+            highlightActiveSeat();
+        }
+
+        function renderCards() {
+            const p = players[HUMAN_INDEX];
+            if (p.cards.length === 2 && !p.folded) {
+                const c1 = p.cards[0], c2 = p.cards[1];
+                plCard1.className = `card-mini revealed ${isRed(c1) ? 'red' : 'black'}`;
+                plCard1.textContent = cardDisplay(c1);
+                plCard2.className = `card-mini revealed ${isRed(c2) ? 'red' : 'black'}`;
+                plCard2.textContent = cardDisplay(c2);
+            } else if (p.folded) {
+                if (p.cards.length === 2) {
+                    const c1 = p.cards[0], c2 = p.cards[1];
+                    plCard1.className = `card-mini revealed ${isRed(c1) ? 'red' : 'black'}`;
+                    plCard1.textContent = cardDisplay(c1);
+                    plCard2.className = `card-mini revealed ${isRed(c2) ? 'red' : 'black'}`;
+                    plCard2.textContent = cardDisplay(c2);
+                }
+            } else {
+                plCard1.className = 'card-mini back';
+                plCard1.textContent = '';
+                plCard2.className = 'card-mini back';
+                plCard2.textContent = '';
+            }
+
+            const ia = players[AI_MAIN_INDEX];
+            const showIaCards = (round >= 4 || ia.folded || players[HUMAN_INDEX].folded);
+            if (ia.cards.length === 2 && showIaCards) {
+                const c1 = ia.cards[0], c2 = ia.cards[1];
+                opCard1.className = `card-mini revealed ${isRed(c1) ? 'red' : 'black'}`;
+                opCard1.textContent = cardDisplay(c1);
+                opCard2.className = `card-mini revealed ${isRed(c2) ? 'red' : 'black'}`;
+                opCard2.textContent = cardDisplay(c2);
+            } else {
+                opCard1.className = 'card-mini back';
+                opCard1.textContent = '';
+                opCard2.className = 'card-mini back';
+                opCard2.textContent = '';
+            }
+
+            let revealCount = 0;
+            if (round >= 1) revealCount = 3;
+            if (round >= 2) revealCount = 4;
+            if (round >= 3) revealCount = 5;
+            if (round >= 4) revealCount = 5;
+            communitySlots.forEach((slot, idx) => {
+                if (idx < revealCount && community[idx]) {
+                    const c = community[idx];
+                    slot.className = `card revealed ${isRed(c) ? 'red' : 'black'} flip`;
+                    slot.textContent = cardDisplay(c);
+                } else {
+                    slot.className = 'card back';
+                    slot.textContent = '';
+                }
+            });
+        }
+
+        function renderSeats() {
+            const seats = document.querySelectorAll('.seat');
+            seats.forEach((seatEl, idx) => {
+                if (idx >= NUM_PLAYERS) return;
+                const player = players[idx];
+                const nameEl = seatEl.querySelector('.name');
+                const chipsEl = seatEl.querySelector('.chips');
+                const statusEl = seatEl.querySelector('.status');
+                const cardsEl = seatEl.querySelectorAll('.card-mini');
+                const betDisplay = seatEl.querySelector('.bet-display');
+                if (nameEl) nameEl.textContent = player.name;
+                if (chipsEl) chipsEl.textContent = '$' + player.chips;
+                if (statusEl) {
+                    if (player.folded) statusEl.textContent = 'Retirado';
+                    else if (!player.active) statusEl.textContent = 'Fuera';
+                    else statusEl.textContent = 'Activo';
+                }
+                if (cardsEl.length === 2 && idx !== HUMAN_INDEX && idx !== AI_MAIN_INDEX) {
+                    if (round >= 4 || player.folded || players[HUMAN_INDEX].folded) {
+                        if (player.cards.length === 2) {
+                            const c1 = player.cards[0], c2 = player.cards[1];
+                            cardsEl[0].className = `card-mini revealed ${isRed(c1) ? 'red' : 'black'}`;
+                            cardsEl[0].textContent = cardDisplay(c1);
+                            cardsEl[1].className = `card-mini revealed ${isRed(c2) ? 'red' : 'black'}`;
+                            cardsEl[1].textContent = cardDisplay(c2);
+                        }
+                    } else {
+                        cardsEl[0].className = 'card-mini back';
+                        cardsEl[0].textContent = '';
+                        cardsEl[1].className = 'card-mini back';
+                        cardsEl[1].textContent = '';
+                    }
+                }
+                if (betDisplay) {
+                    if (player.betThisRound > 0) betDisplay.textContent = '$' + player.betThisRound;
+                    else betDisplay.textContent = '';
+                }
+            });
+            if (players[AI_MAIN_INDEX].folded) iaStatusEl.textContent = 'Retirado';
+            else iaStatusEl.textContent = 'Activo';
+            if (players[HUMAN_INDEX].folded) playerStatusEl.textContent = 'Retirado';
+            else playerStatusEl.textContent = 'Activo';
+        }
+
+        function highlightActiveSeat() {
+            document.querySelectorAll('.seat').forEach(el => el.classList.remove('active-turn'));
+            const seatEl = document.querySelector(`.seat[data-seat="${currentPlayerTurn}"]`);
+            if (seatEl) {
+                seatEl.classList.add('active-turn');
+            }
+        }
+
+        function updateInfo() {
+            updatePot();
+            updateBalanceUI();
+        }
+        function updatePot() { potEl.textContent = pot; }
+        function updateBalanceUI() {
+            const p = players[HUMAN_INDEX];
+            playerChipsEl.textContent = '$' + p.chips;
+            if (p.chips <= 0) {
+                playerChipsEl.style.color = '#eb5757';
+                if (!isBroke && handActive) {
+                    isBroke = true;
+                    brokeOverlay.style.display = 'flex';
+                    handActive = false;
+                    enableControls(false);
+                    handMessage.textContent = '💔 Bancarrota';
+                }
+            } else {
+                playerChipsEl.style.color = '#f7d875';
+            }
+            const ia = players[AI_MAIN_INDEX];
+            iaChipsEl.textContent = '$' + ia.chips;
+            updateBetRange();
+        }
+        function updateBetRange() {
+            const p = players[HUMAN_INDEX];
+            let maxBet = Math.min(p.chips, 500);
+            if (maxBet < 10) maxBet = 10;
+            betRange.max = maxBet;
+            if (parseInt(betRange.value) > maxBet) betRange.value = maxBet;
+            betValue.textContent = '$' + betRange.value;
+        }
+        function updateSeatStatus() { renderSeats(); }
+
+        // ============================================================
+        // CONTROLES
+        // ============================================================
+        function enableControls(enabled) {
+            const p = players[HUMAN_INDEX];
+            const isMyTurn = (currentPlayerTurn === HUMAN_INDEX && !p.folded && handActive && !gameOver && !isBroke);
+            if (isMyTurn && enabled) {
+                actionInProgress = false;
+            }
+            const canAct = enabled && isMyTurn && !actionInProgress;
+            foldBtn.disabled = !canAct;
+            const isCheck = (currentBet === 0);
+            checkBtn.style.display = isCheck ? 'block' : 'none';
+            checkBtn.disabled = !canAct || !isCheck;
+            callBtn.style.display = isCheck ? 'none' : 'block';
+            callBtn.disabled = !canAct || isCheck;
+            raiseBtn.disabled = !canAct;
+            betRange.disabled = !canAct;
+            if (canAct) {
+                appEl.classList.remove('waiting');
+                handMessage.textContent = 'Tu turno';
+            } else {
+                appEl.classList.add('waiting');
+                if (handActive && !p.folded && currentPlayerTurn !== HUMAN_INDEX && !gameOver && !isBroke) {
+                    handMessage.textContent = 'Esperando a otros jugadores...';
+                } else if (handActive && currentPlayerTurn === HUMAN_INDEX && !canAct) {
+                    handMessage.textContent = 'Preparando tu turno...';
+                }
+            }
+            highlightActiveSeat();
+        }
+
+        function addHistory(text, isError = false) {
+            const p = document.createElement('p');
+            p.innerHTML = text;
+            if (isError) p.style.color = '#eb5757';
+            historyLog.appendChild(p);
+            historyLog.scrollTop = historyLog.scrollHeight;
+            while (historyLog.children.length > 40) historyLog.removeChild(historyLog.firstChild);
+        }
+
+        // ============================================================
+        // ACCIONES DEL JUGADOR
+        // ============================================================
+        function playerRaise() {
+            if (!validateAction() || isBroke) return;
+            let amount = parseInt(betRange.value);
+            const p = players[HUMAN_INDEX];
+            if (amount > p.chips) { addHistory('Saldo insuficiente.', true); return; }
+            if (currentBet > 0 && amount < currentBet) {
+                addHistory('Debes subir al menos la apuesta actual.', true);
+                return;
+            }
+            if (amount === 0) { addHistory('La apuesta debe ser mayor que 0.', true); return; }
+            p.chips -= amount;
+            p.betThisRound += amount;
+            pot += amount;
+            if (amount > currentBet) currentBet = amount;
+            soundRaise();
+            addHistory(`⬆ Subes $${amount}`);
+            updateInfo();
+            renderAll();
+            nextTurn();
+        }
+
+        function playerCall() {
+            if (!validateAction() || isBroke) return;
+            const p = players[HUMAN_INDEX];
+            if (currentBet === 0) { addHistory('No hay apuesta para igualar.', true); return; }
+            let amount = Math.min(currentBet, p.chips);
+            if (amount === 0) { addHistory('Saldo insuficiente.', true); return; }
+            p.chips -= amount;
+            p.betThisRound += amount;
+            pot += amount;
+            soundCall();
+            addHistory(`✅ Igualas $${amount}`);
+            updateInfo();
+            renderAll();
+            nextTurn();
+        }
+
+        function playerCheck() {
+            if (!validateAction() || isBroke) return;
+            if (currentBet > 0) { addHistory('No puedes ver, hay apuesta.', true); return; }
+            soundCall();
+            addHistory('✅ Verificas');
+            updateInfo();
+            renderAll();
+            nextTurn();
+        }
+
+        function playerFold() {
+            if (!validateAction() || isBroke) return;
+            const p = players[HUMAN_INDEX];
+            p.folded = true;
+            soundFold();
+            addHistory('🚫 Te retiras');
+            updateInfo();
+            renderAll();
+            if (checkAllFolded()) {
+                endHand();
+                return;
+            }
+            nextTurn();
+        }
+
+        function validateAction() {
+            if (!handActive || gameOver || isBroke) return false;
+            if (actionInProgress) return false;
+            if (currentPlayerTurn !== HUMAN_INDEX) return false;
+            const p = players[HUMAN_INDEX];
+            if (p.folded || !p.active || p.chips <= 0) return false;
+            return true;
+        }
+
+        // ============================================================
+        // GESTIÓN DE TURNOS (con ciegas)
+        // ============================================================
+        function nextTurn() {
+            if (turnTimeout) {
+                clearTimeout(turnTimeout);
+                turnTimeout = null;
+            }
+
+            if (!handActive || gameOver || isBroke) {
+                enableControls(false);
+                return;
+            }
+
+            // Buscar siguiente jugador activo
+            let next = (currentPlayerTurn + 1) % NUM_PLAYERS;
+            let count = 0;
+            let found = false;
+            while (count < NUM_PLAYERS) {
+                const p = players[next];
+                if (!p.folded && p.active && p.chips > 0) {
+                    currentPlayerTurn = next;
+                    found = true;
+                    break;
+                }
+                next = (next + 1) % NUM_PLAYERS;
+                count++;
+            }
+
+            if (!found) {
+                endHand();
+                return;
+            }
+
+            // Si es el humano, habilitar controles
+            if (currentPlayerTurn === HUMAN_INDEX) {
+                actionInProgress = false;
+                renderAll();
+                enableControls(true);
+                turnTimeout = setTimeout(() => {
+                    if (handActive && !gameOver && !isBroke && currentPlayerTurn === HUMAN_INDEX) {
+                        addHistory('⏰ Tiempo agotado, te retiras automáticamente.', true);
+                        playerFold();
+                    }
+                }, 30000);
+                return;
+            }
+
+            // Turno de IA
+            const activePlayers = players.filter(p => !p.folded && p.active && p.chips > 0);
+            const allHaveActed = activePlayers.every(p => p.betThisRound === currentBet);
+            const allChecked = activePlayers.every(p => p.betThisRound === 0 && currentBet === 0);
+
+            if ((allHaveActed || allChecked) && activePlayers.length > 1) {
+                endRound();
+                return;
+            }
+
+            renderAll();
+            enableControls(false);
+            actionInProgress = true;
+            setTimeout(() => {
+                if (handActive && !gameOver && !isBroke) {
+                    executeAITurn(currentPlayerTurn);
+                }
+                actionInProgress = false;
+            }, 500 + Math.random() * 400);
+        }
+
+        function executeAITurn(index) {
+            if (!handActive || gameOver || isBroke) return;
+            const player = players[index];
+            if (player.folded || !player.active || player.chips <= 0) {
+                nextTurn();
+                return;
+            }
+            let decision;
+            if (player.isMainAI) {
+                decision = mainAI(player, community, pot, currentBet, player.betThisRound, 0, round);
+            } else {
+                decision = smartAI(player, community, pot, currentBet, player.personality, round, index);
+            }
+            const action = decision.action;
+            const amount = decision.amount || 0;
+
+            if (action === 'fold') {
+                player.folded = true;
+                soundFold();
+                addHistory(`🤖 ${player.name} (${player.personality.name}) se retira`);
+                updateInfo();
+                renderAll();
+                if (checkAllFolded()) {
+                    endHand();
+                    return;
+                }
+                nextTurn();
+            } else if (action === 'check') {
+                soundCall();
+                addHistory(`🤖 ${player.name} verifica`);
+                updateInfo();
+                renderAll();
+                nextTurn();
+            } else if (action === 'call') {
+                let callAmount = Math.min(currentBet, player.chips);
+                if (callAmount > 0) {
+                    player.chips -= callAmount;
+                    player.betThisRound += callAmount;
+                    pot += callAmount;
+                }
+                soundCall();
+                addHistory(`🤖 ${player.name} iguala $${callAmount}`);
+                updateInfo();
+                renderAll();
+                nextTurn();
+            } else if (action === 'raise') {
+                let raiseAmount = Math.min(amount, player.chips);
+                if (raiseAmount > 0) {
+                    player.chips -= raiseAmount;
+                    player.betThisRound += raiseAmount;
+                    pot += raiseAmount;
+                    if (raiseAmount > currentBet) currentBet = raiseAmount;
+                }
+                soundRaise();
+                addHistory(`🤖 ${player.name} sube $${raiseAmount}`);
+                updateInfo();
+                renderAll();
+                nextTurn();
+            } else {
+                nextTurn();
+            }
+        }
+
+        // ============================================================
+        // FIN DE RONDA Y SHOWDOWN
+        // ============================================================
+        function checkAllFolded() {
+            const active = players.filter(p => !p.folded && p.active && p.chips > 0);
+            return active.length <= 1;
+        }
+
+        function endRound() {
+            if (gameOver || isBroke) return;
+            if (checkAllFolded()) {
+                endHand();
+                return;
+            }
+            if (round === 0) {
+                round = 1;
+                handMessage.textContent = 'Flop · 3 cartas';
+                addHistory('🃏 Flop');
+            } else if (round === 1) {
+                round = 2;
+                handMessage.textContent = 'Turn · 4ª carta';
+                addHistory('🃏 Turn');
+            } else if (round === 2) {
+                round = 3;
+                handMessage.textContent = 'River · 5ª carta';
+                addHistory('🃏 River');
+            } else if (round === 3) {
+                round = 4;
+                handMessage.textContent = '¡Showdown!';
+                addHistory('⚔️ Showdown');
+                showdown();
+                return;
+            }
+            // Resetear apuestas para la nueva ronda
+            for (let p of players) {
+                p.betThisRound = 0;
+            }
+            currentBet = 0;
+            renderAll();
+            // El primer jugador activo después del dealer (para simplificar, el que está después del BB)
+            let firstActive = (dealerPosition + 3) % NUM_PLAYERS; // UTG
+            let attempts = 0;
+            while ((players[firstActive].folded || !players[firstActive].active || players[firstActive].chips <= 0) && attempts < NUM_PLAYERS) {
+                firstActive = (firstActive + 1) % NUM_PLAYERS;
+                attempts++;
+            }
+            currentPlayerTurn = firstActive;
+            renderAll();
+            if (currentPlayerTurn === HUMAN_INDEX) {
+                enableControls(true);
+                handMessage.textContent = 'Tu turno';
+            } else {
+                enableControls(false);
+                setTimeout(() => {
+                    if (handActive && !gameOver && !isBroke) {
+                        executeAITurn(currentPlayerTurn);
+                    }
+                }, 500);
+            }
+        }
+
+        function showdown() {
+            const active = players.filter(p => !p.folded && p.active && p.chips > 0);
+            if (active.length === 0) {
+                setTimeout(() => { if (!isBroke) initGame(false); }, 500);
+                return;
+            }
+            let bestHands = active.map(p => {
+                const best = getBestHand(p.cards, community);
+                return { player: p, hand: best };
+            });
+            bestHands.sort((a, b) => {
+                if (a.hand.rank !== b.hand.rank) return b.hand.rank - a.hand.rank;
+                return b.hand.high - a.hand.high;
+            });
+            const winner = bestHands[0];
+            const winnerName = winner.player.name;
+            const handName = winner.hand.name;
+            winner.player.chips += pot;
+            addHistory(`🏆 ${winnerName} gana $${pot} con ${handName}`);
+            if (winner.player.index === HUMAN_INDEX) {
+                soundWin();
+                tableArea.classList.add('win-glow');
+                setTimeout(() => tableArea.classList.remove('win-glow'), 700);
+            } else {
+                soundLose();
+                if (!players[HUMAN_INDEX].folded && players[HUMAN_INDEX].chips > 0) {
+                    tableArea.classList.add('lose-glow');
+                    setTimeout(() => tableArea.classList.remove('lose-glow'), 700);
+                }
+            }
+            pot = 0;
+            handActive = false;
+            gameOver = true;
+            updateInfo();
+            renderAll();
+            enableControls(false);
+            handMessage.textContent = `¡${winnerName} gana con ${handName}!`;
+            setTimeout(() => {
+                if (!isBroke) {
+                    gameOver = false;
+                    initGame(false);
+                }
+            }, 3000);
+        }
+
+        function endHand() {
+            const active = players.filter(p => !p.folded && p.active && p.chips > 0);
+            if (active.length === 1) {
+                const winner = active[0];
+                winner.chips += pot;
+                addHistory(`🏆 ${winner.name} gana $${pot} (todos se retiraron)`);
+                if (winner.index === HUMAN_INDEX) {
+                    soundWin();
+                    tableArea.classList.add('win-glow');
+                    setTimeout(() => tableArea.classList.remove('win-glow'), 700);
+                } else {
+                    soundLose();
+                    if (!players[HUMAN_INDEX].folded && players[HUMAN_INDEX].chips > 0) {
+                        tableArea.classList.add('lose-glow');
+                        setTimeout(() => tableArea.classList.remove('lose-glow'), 700);
+                    }
+                }
+                pot = 0;
+                handActive = false;
+                gameOver = true;
+                updateInfo();
+                renderAll();
+                enableControls(false);
+                handMessage.textContent = `¡${winner.name} gana!`;
+                setTimeout(() => {
+                    if (!isBroke) {
+                        gameOver = false;
+                        initGame(false);
+                    }
+                }, 3000);
+            } else {
+                if (!isBroke) initGame(false);
+            }
+        }
+
+        // ============================================================
+        // REINICIO DE SALDO
+        // ============================================================
+        function resetBalance() {
+            const p = players[HUMAN_INDEX];
+            if (p) p.chips = INITIAL_BALANCE;
+            isBroke = false;
+            brokeOverlay.style.display = 'none';
+            gameOver = false;
+            handActive = false;
+            if (turnTimeout) clearTimeout(turnTimeout);
+            initGame(false);
+            addHistory('🔄 Saldo reiniciado a $' + INITIAL_BALANCE);
+        }
+
+        // ============================================================
+        // EVENTOS
+        // ============================================================
+        betRange.addEventListener('input', function() {
+            betValue.textContent = '$' + this.value;
+        });
+
+        raiseBtn.addEventListener('click', playerRaise);
+        callBtn.addEventListener('click', playerCall);
+        checkBtn.addEventListener('click', playerCheck);
+        foldBtn.addEventListener('click', playerFold);
+
+        resetBtn.addEventListener('click', resetBalance);
+        resetBrokeBtn.addEventListener('click', resetBalance);
+
+        // ============================================================
+        // INICIAR
+        // ============================================================
+        initGame(true);
+
+    })();
+</script>
+</body>
+</html>
