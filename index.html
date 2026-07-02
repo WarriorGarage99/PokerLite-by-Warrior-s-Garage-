@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PokerLite by Warrior's Garage</title>
+    <!-- === ENLACE AL MANIFEST (PWA) === -->
+    <link rel="manifest" href="manifest.json">
     <style>
         /* ===== Mismos estilos de la versión anterior ===== */
         * {
@@ -1287,6 +1289,13 @@
         initGame(true);
 
     })();
+</script>
+
+<!-- ===== REGISTRO DEL SERVICE WORKER (PWA) ===== -->
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
 </script>
 </body>
 </html>
