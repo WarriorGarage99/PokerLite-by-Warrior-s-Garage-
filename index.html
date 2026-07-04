@@ -467,7 +467,7 @@
         <button class="btn-close" id="closeBannerBtn">✕</button>
     </div>
 
-    <!-- ===== MODAL DE INSTALACIÓN (nuevo) ===== -->
+    <!-- ===== MODAL DE INSTALACIÓN ===== -->
     <div class="modal-overlay" id="installModal">
         <div class="modal-box">
             <button class="close-modal" id="closeModalBtn">✕</button>
@@ -497,7 +497,6 @@
         <span class="pot">Bote: <span id="potDisplay">0</span></span>
     </div>
     <div class="table" id="tableArea">
-        <!-- (las filas de asientos se mantienen igual) -->
         <div class="seat-row">
             <div class="seat" data-seat="0">
                 <div class="avatar">👤</div>
@@ -585,7 +584,7 @@
 
 <script>
     // ================================================================
-    // BANNER Y MODAL DE INSTALACIÓN (mejorado)
+    // BANNER Y MODAL DE INSTALACIÓN (100% profesional, sin alert)
     // ================================================================
     (function() {
         const banner = document.getElementById('installBanner');
@@ -614,12 +613,14 @@
             }
         });
 
-        // Función para abrir el modal con los pasos adecuados
+        // Función para abrir el modal con pasos adaptados al dispositivo
         function openInstallModal() {
             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
             const isAndroid = /Android/.test(navigator.userAgent);
 
             let stepsHtml = '';
+            let primaryAction = '';
+
             if (isIOS) {
                 stepsHtml = `
                     <li><span class="step-num">1</span><span class="step-text">Toca el botón <strong>Compartir</strong> (icono cuadrado con flecha).</span></li>
@@ -628,12 +629,15 @@
                 `;
                 modalInstallBtn.textContent = 'Cómo instalar en iOS';
                 modalInstallBtn.onclick = () => {
-                    // Mostrar instrucciones más detalladas o abrir un enlace
-                    alert('Abre Safari, toca "Compartir" y selecciona "Añadir a pantalla de inicio".');
+                    // Solo mostramos instrucciones, no alert
+                    // El modal ya las muestra, simplemente cerramos y abrimos el menú de compartir (no se puede forzar)
+                    // En iOS, el usuario debe hacerlo manualmente, así que solo cerramos el modal
+                    closeModal();
+                    // Opcional: mostrar un pequeño tooltip o notificación, pero evitamos alert
                 };
             } else if (isAndroid) {
                 if (deferredPrompt) {
-                    // Si hay beforeinstallprompt, mostrar botón de instalación directa
+                    // Instalación automática disponible
                     stepsHtml = `
                         <li><span class="step-num">1</span><span class="step-text">Toca <strong>Instalar ahora</strong> para iniciar la instalación.</span></li>
                         <li><span class="step-num">2</span><span class="step-text">Confirma la instalación en el cuadro de diálogo.</span></li>
@@ -650,9 +654,6 @@
                                 console.log('App instalada');
                             }
                             deferredPrompt = null;
-                        } else {
-                            // Fallback: mostrar instrucciones manuales
-                            alert('No se pudo iniciar la instalación automática. Abre el menú de Chrome y selecciona "Instalar aplicación".');
                         }
                     };
                 } else {
@@ -664,8 +665,9 @@
                     `;
                     modalInstallBtn.textContent = 'Abrir menú de instalación';
                     modalInstallBtn.onclick = () => {
-                        // Sugerir al usuario que abra el menú de Chrome
-                        alert('Abre el menú de Chrome (tres puntos) y selecciona "Instalar aplicación".');
+                        // No usamos alert, solo mostramos instrucciones en el modal
+                        // El usuario ya las tiene, solo cerramos el modal
+                        closeModal();
                     };
                 }
             } else {
@@ -677,18 +679,23 @@
                 `;
                 modalInstallBtn.textContent = 'Cómo instalar';
                 modalInstallBtn.onclick = () => {
-                    alert('Usa la opción "Instalar" o "Añadir a pantalla de inicio" de tu navegador.');
+                    closeModal();
                 };
             }
             modalSteps.innerHTML = stepsHtml;
             modal.classList.add('active');
         }
 
+        // Función para cerrar el modal
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
         // Botón "Instalar App" del banner
         installBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (deferredPrompt) {
-                // Si tenemos beforeinstallprompt, lo usamos directamente sin modal
+                // Usar instalación automática
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((result) => {
                     if (result.outcome === 'accepted') {
@@ -698,7 +705,7 @@
                     deferredPrompt = null;
                 });
             } else {
-                // Si no, mostramos el modal con instrucciones
+                // Mostrar modal con instrucciones
                 openInstallModal();
             }
         });
@@ -709,10 +716,7 @@
             localStorage.setItem('pokerlite-banner-closed', 'true');
         });
 
-        // Cerrar modal
-        function closeModal() {
-            modal.classList.remove('active');
-        }
+        // Cerrar modal desde los botones
         closeModalBtn.addEventListener('click', closeModal);
         modalCloseBtn.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => {
@@ -745,9 +749,6 @@
                 banner.classList.remove('hidden');
             }, 500);
         }
-
-        // Si el navegador no soporta beforeinstallprompt y es Android, mostrar el banner
-        // pero ya lo mostramos por defecto.
     })();
 
     // ================================================================
