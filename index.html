@@ -33,7 +33,8 @@
             border: 1px solid #353d4d;
             position: relative;
         }
-        /* ===== Banner de instalación ===== */
+
+        /* ===== BANNER DE INSTALACIÓN ===== */
         .install-banner {
             position: relative;
             background: linear-gradient(135deg, #1e2636, #2a3345);
@@ -134,9 +135,139 @@
         .install-banner .btn-close:active {
             color: #e0e4ec;
         }
-        /* Ocultar banner cuando está instalado o cerrado */
         .install-banner.hidden {
             display: none;
+        }
+
+        /* ===== MODAL DE INSTALACIÓN (nuevo) ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: #1a1f28;
+            border-radius: 32px;
+            max-width: 400px;
+            width: 100%;
+            padding: 28px 24px 24px;
+            border: 1px solid rgba(247,216,117,0.2);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+            position: relative;
+            text-align: center;
+        }
+        .modal-box .close-modal {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #7a8290;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-box .close-modal:active {
+            color: #e0e4ec;
+        }
+        .modal-box .modal-icon {
+            font-size: 56px;
+            margin-bottom: 8px;
+        }
+        .modal-box .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f7d875;
+            margin-bottom: 6px;
+        }
+        .modal-box .modal-sub {
+            font-size: 14px;
+            color: #b0b8c8;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .modal-box .modal-steps {
+            text-align: left;
+            background: #121720;
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 20px;
+            border: 1px solid #2f3648;
+        }
+        .modal-box .modal-steps li {
+            list-style: none;
+            font-size: 13px;
+            color: #e0e4ec;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #222837;
+        }
+        .modal-box .modal-steps li:last-child {
+            border-bottom: none;
+        }
+        .modal-box .modal-steps li .step-num {
+            background: #f7d875;
+            color: #1a1f28;
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+        .modal-box .modal-steps li .step-text {
+            flex: 1;
+        }
+        .modal-box .modal-btn-primary {
+            background: linear-gradient(135deg, #f7d875, #d4a342);
+            border: none;
+            border-radius: 60px;
+            padding: 14px 0;
+            font-weight: 700;
+            font-size: 16px;
+            color: #1a1f28;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(247,216,117,0.3);
+            transition: 0.2s;
+            font-family: inherit;
+        }
+        .modal-box .modal-btn-primary:active {
+            transform: scale(0.97);
+        }
+        .modal-box .modal-btn-secondary {
+            background: transparent;
+            border: 1px solid #3f4552;
+            border-radius: 60px;
+            padding: 12px 0;
+            font-weight: 600;
+            font-size: 14px;
+            color: #b0b8c8;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .modal-box .modal-btn-secondary:active {
+            background: #2a3345;
         }
 
         /* ===== Estilos del resto (sin cambios) ===== */
@@ -305,6 +436,8 @@
             .table-info .blinds { font-size: 9px; }
             .install-banner { flex-wrap: wrap; }
             .install-banner .btn-install { width: 100%; text-align: center; }
+            .modal-box { padding: 20px 16px; }
+            .modal-box .modal-title { font-size: 20px; }
         }
         @media (max-width: 360px) {
             .seat { min-width: 30px; }
@@ -318,7 +451,7 @@
 </head>
 <body>
 <div id="app">
-    <!-- ===== BANNER DE INSTALACIÓN (premium) ===== -->
+    <!-- ===== BANNER DE INSTALACIÓN ===== -->
     <div class="install-banner" id="installBanner">
         <div class="icon">📲</div>
         <div class="content">
@@ -334,7 +467,22 @@
         <button class="btn-close" id="closeBannerBtn">✕</button>
     </div>
 
-    <!-- ===== RESTO DE LA APP (sin cambios) ===== -->
+    <!-- ===== MODAL DE INSTALACIÓN (nuevo) ===== -->
+    <div class="modal-overlay" id="installModal">
+        <div class="modal-box">
+            <button class="close-modal" id="closeModalBtn">✕</button>
+            <div class="modal-icon">📱</div>
+            <div class="modal-title">Instalar PokerLite</div>
+            <div class="modal-sub">Disfruta de la app completa sin conexión y con acceso rápido desde tu pantalla de inicio.</div>
+            <div class="modal-steps" id="modalSteps">
+                <!-- Los pasos se llenan dinámicamente según el dispositivo -->
+            </div>
+            <button class="modal-btn-primary" id="modalInstallBtn">Instalar ahora</button>
+            <button class="modal-btn-secondary" id="modalCloseBtn">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- ===== RESTO DE LA APP ===== -->
     <div class="header">
         <div class="logo">
             <span>♠</span>
@@ -349,6 +497,7 @@
         <span class="pot">Bote: <span id="potDisplay">0</span></span>
     </div>
     <div class="table" id="tableArea">
+        <!-- (las filas de asientos se mantienen igual) -->
         <div class="seat-row">
             <div class="seat" data-seat="0">
                 <div class="avatar">👤</div>
@@ -436,11 +585,16 @@
 
 <script>
     // ================================================================
-    // BANNER DE INSTALACIÓN (Premium)
+    // BANNER Y MODAL DE INSTALACIÓN (mejorado)
     // ================================================================
     (function() {
         const banner = document.getElementById('installBanner');
-        const closeBtn = document.getElementById('closeBannerBtn');
+        const modal = document.getElementById('installModal');
+        const modalSteps = document.getElementById('modalSteps');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const modalInstallBtn = document.getElementById('modalInstallBtn');
+        const closeBannerBtn = document.getElementById('closeBannerBtn');
         const installBtn = document.getElementById('installBtn');
 
         let deferredPrompt = null;
@@ -451,41 +605,118 @@
             banner.classList.add('hidden');
         }
 
-        // Detectar el evento beforeinstallprompt (Android)
+        // Evento beforeinstallprompt (Android)
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Mostrar banner si no está oculto
             if (!isInstalled && !banner.classList.contains('hidden')) {
                 banner.classList.remove('hidden');
             }
         });
 
-        // Botón de instalación
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                // Android: mostrar prompt nativo
-                deferredPrompt.prompt();
-                const result = await deferredPrompt.userChoice;
-                if (result.outcome === 'accepted') {
-                    banner.classList.add('hidden');
-                    console.log('App instalada');
+        // Función para abrir el modal con los pasos adecuados
+        function openInstallModal() {
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+
+            let stepsHtml = '';
+            if (isIOS) {
+                stepsHtml = `
+                    <li><span class="step-num">1</span><span class="step-text">Toca el botón <strong>Compartir</strong> (icono cuadrado con flecha).</span></li>
+                    <li><span class="step-num">2</span><span class="step-text">Desliza hacia abajo y elige <strong>Añadir a pantalla de inicio</strong>.</span></li>
+                    <li><span class="step-num">3</span><span class="step-text">Confirma tocando <strong>Añadir</strong> y la app aparecerá en tu escritorio.</span></li>
+                `;
+                modalInstallBtn.textContent = 'Cómo instalar en iOS';
+                modalInstallBtn.onclick = () => {
+                    // Mostrar instrucciones más detalladas o abrir un enlace
+                    alert('Abre Safari, toca "Compartir" y selecciona "Añadir a pantalla de inicio".');
+                };
+            } else if (isAndroid) {
+                if (deferredPrompt) {
+                    // Si hay beforeinstallprompt, mostrar botón de instalación directa
+                    stepsHtml = `
+                        <li><span class="step-num">1</span><span class="step-text">Toca <strong>Instalar ahora</strong> para iniciar la instalación.</span></li>
+                        <li><span class="step-num">2</span><span class="step-text">Confirma la instalación en el cuadro de diálogo.</span></li>
+                        <li><span class="step-num">3</span><span class="step-text">¡Listo! Disfruta de PokerLite desde tu pantalla de inicio.</span></li>
+                    `;
+                    modalInstallBtn.textContent = 'Instalar ahora';
+                    modalInstallBtn.onclick = async () => {
+                        if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                            const result = await deferredPrompt.userChoice;
+                            if (result.outcome === 'accepted') {
+                                banner.classList.add('hidden');
+                                modal.classList.remove('active');
+                                console.log('App instalada');
+                            }
+                            deferredPrompt = null;
+                        } else {
+                            // Fallback: mostrar instrucciones manuales
+                            alert('No se pudo iniciar la instalación automática. Abre el menú de Chrome y selecciona "Instalar aplicación".');
+                        }
+                    };
+                } else {
+                    // Sin beforeinstallprompt: instrucciones manuales
+                    stepsHtml = `
+                        <li><span class="step-num">1</span><span class="step-text">Abre el menú de Chrome (tres puntos en la esquina superior derecha).</span></li>
+                        <li><span class="step-num">2</span><span class="step-text">Busca la opción <strong>Instalar aplicación</strong> (o "Añadir a pantalla de inicio").</span></li>
+                        <li><span class="step-num">3</span><span class="step-text">Confirma y la app se instalará en tu dispositivo.</span></li>
+                    `;
+                    modalInstallBtn.textContent = 'Abrir menú de instalación';
+                    modalInstallBtn.onclick = () => {
+                        // Sugerir al usuario que abra el menú de Chrome
+                        alert('Abre el menú de Chrome (tres puntos) y selecciona "Instalar aplicación".');
+                    };
                 }
-                deferredPrompt = null;
-            } else if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
-                // iOS: guía para añadir a la pantalla de inicio
-                alert('📱 Para instalar en iOS: toca el botón "Compartir" y selecciona "Añadir a pantalla de inicio".');
             } else {
-                // Otros navegadores: mostrar mensaje genérico
-                alert('💡 Para instalar esta app, usa Chrome o Edge y busca el icono "Instalar" en la barra de direcciones.');
+                // Otros navegadores (escritorio, etc.)
+                stepsHtml = `
+                    <li><span class="step-num">1</span><span class="step-text">Abre el menú del navegador (generalmente tres puntos o líneas).</span></li>
+                    <li><span class="step-num">2</span><span class="step-text">Busca la opción <strong>Instalar</strong> o <strong>Añadir a pantalla de inicio</strong>.</span></li>
+                    <li><span class="step-num">3</span><span class="step-text">Sigue las instrucciones para completar la instalación.</span></li>
+                `;
+                modalInstallBtn.textContent = 'Cómo instalar';
+                modalInstallBtn.onclick = () => {
+                    alert('Usa la opción "Instalar" o "Añadir a pantalla de inicio" de tu navegador.');
+                };
+            }
+            modalSteps.innerHTML = stepsHtml;
+            modal.classList.add('active');
+        }
+
+        // Botón "Instalar App" del banner
+        installBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (deferredPrompt) {
+                // Si tenemos beforeinstallprompt, lo usamos directamente sin modal
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((result) => {
+                    if (result.outcome === 'accepted') {
+                        banner.classList.add('hidden');
+                        console.log('App instalada');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                // Si no, mostramos el modal con instrucciones
+                openInstallModal();
             }
         });
 
         // Cerrar banner manualmente
-        closeBtn.addEventListener('click', () => {
+        closeBannerBtn.addEventListener('click', () => {
             banner.classList.add('hidden');
-            // Guardar preferencia en localStorage para no mostrarlo de nuevo en esta sesión
             localStorage.setItem('pokerlite-banner-closed', 'true');
+        });
+
+        // Cerrar modal
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+        closeModalBtn.addEventListener('click', closeModal);
+        modalCloseBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
         });
 
         // Si el usuario cerró el banner antes, no mostrarlo
@@ -493,9 +724,10 @@
             banner.classList.add('hidden');
         }
 
-        // Si la app se instala, ocultar el banner
+        // Si la app se instala, ocultar banner y modal
         window.addEventListener('appinstalled', () => {
             banner.classList.add('hidden');
+            modal.classList.remove('active');
             localStorage.removeItem('pokerlite-banner-closed');
         });
 
@@ -503,16 +735,19 @@
         window.matchMedia('(display-mode: standalone)').addEventListener('change', (ev) => {
             if (ev.matches) {
                 banner.classList.add('hidden');
+                modal.classList.remove('active');
             }
         });
 
         // Mostrar banner si no está instalado y no se ha cerrado
         if (!isInstalled && localStorage.getItem('pokerlite-banner-closed') !== 'true') {
-            // Pequeño delay para que la interfaz cargue
             setTimeout(() => {
                 banner.classList.remove('hidden');
             }, 500);
         }
+
+        // Si el navegador no soporta beforeinstallprompt y es Android, mostrar el banner
+        // pero ya lo mostramos por defecto.
     })();
 
     // ================================================================
@@ -1483,4 +1718,4 @@
     }
 </script>
 </body>
-</html>
+    </html>
