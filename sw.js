@@ -1,4 +1,4 @@
-// sw.js - Service Worker básico
+// sw.js - Service Worker con gestión de caché avanzada
 const CACHE_NAME = 'pokerlite-v1';
 const urlsToCache = [
   'index.html',
@@ -15,10 +15,29 @@ self.addEventListener('install', event => {
   );
 });
 
+// Activar: eliminar cachés antiguas para mantener solo la versión actual
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('🗑️ Eliminando caché antigua:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
 // Interceptar peticiones y servir desde la caché si es posible
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request))
+      .then(response => {
+        // Si está en caché, devolverlo; si no, obtener de la red
+        return response || fetch(event.request);
+      })
   );
 });
