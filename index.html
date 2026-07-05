@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Solitario de Santos · Herminia</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <style>
         /* ===== RESET Y BASE ===== */
         * {
@@ -1097,7 +1097,7 @@
 
 <script>
     // ================================================================
-    // INSTALACIÓN PWA - DEFINITIVA
+    // INSTALACIÓN PWA - ADAPTADA PARA GITHUB PAGES (RUTAS RELATIVAS)
     // ================================================================
     (function() {
         const banner = document.getElementById('installBanner');
@@ -1188,12 +1188,12 @@
     })();
 
     // ================================================================
-    // REGISTRO DE SERVICE WORKER - SIMPLE Y DIRECTO
+    // REGISTRO DE SERVICE WORKER - RUTA RELATIVA
     // ================================================================
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('✅ SW registrado'))
-            .catch(err => console.warn('⚠️ SW error:', err));
+        navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('✅ SW registrado correctamente'))
+            .catch(err => console.warn('⚠️ Error al registrar SW:', err));
     }
 
     // ================================================================
