@@ -1,10 +1,10 @@
-const CACHE_NAME = 'herminia-v4';
+const CACHE_NAME = 'herminia-v5';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
